@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="robots" content="noindex, nofollow"/>
+  <title>TICKER CONTROL</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #090909;
+      color: #e0e0e0;
+      font-family: 'IBM Plex Mono', monospace;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .card {
+      width: 100%;
+      max-width: 520px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,180,0,0.2);
+      border-radius: 12px;
+      padding: 32px 28px;
+    }
+    h1 {
+      font-size: 14px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: #ffb400;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      font-size: 11px;
+      color: rgba(255,255,255,0.35);
+      margin-bottom: 28px;
+      letter-spacing: 1px;
+    }
+    label {
+      display: block;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 8px;
+    }
+    textarea {
+      width: 100%;
+      min-height: 100px;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(255,180,0,0.15);
+      border-radius: 8px;
+      color: #fff;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 14px;
+      padding: 14px;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    textarea:focus { border-color: rgba(255,180,0,0.5); }
+    input[type="password"], input[type="text"] {
+      width: 100%;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(255,180,0,0.15);
+      border-radius: 8px;
+      color: #fff;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 14px;
+      padding: 12px 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      margin-bottom: 20px;
+    }
+    input[type="password"]:focus, input[type="text"]:focus { border-color: rgba(255,180,0,0.5); }
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 20px 0;
+      padding: 12px 0;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .toggle-label { font-size: 12px; letter-spacing: 1px; color: rgba(255,255,255,0.6); }
+    .toggle {
+      position: relative;
+      width: 48px;
+      height: 26px;
+    }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(255,255,255,0.1);
+      border-radius: 26px;
+      transition: 0.3s;
+    }
+    .toggle .slider::before {
+      content: "";
+      position: absolute;
+      height: 20px;
+      width: 20px;
+      left: 3px;
+      bottom: 3px;
+      background: #555;
+      border-radius: 50%;
+      transition: 0.3s;
+    }
+    .toggle input:checked + .slider { background: rgba(255,180,0,0.3); }
+    .toggle input:checked + .slider::before { transform: translateX(22px); background: #ffb400; }
+    .actions { display: flex; gap: 12px; margin-top: 20px; }
+    button {
+      flex: 1;
+      padding: 14px 20px;
+      border: none;
+      border-radius: 8px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-save {
+      background: #ffb400;
+      color: #090909;
+    }
+    .btn-save:hover { background: #ffc733; }
+    .btn-save:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-clear {
+      background: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.5);
+      flex: 0.5;
+    }
+    .btn-clear:hover { background: rgba(255,255,255,0.1); color: #fff; }
+    .status {
+      margin-top: 16px;
+      font-size: 11px;
+      letter-spacing: 1px;
+      text-align: center;
+      min-height: 18px;
+      transition: opacity 0.3s;
+    }
+    .status.ok { color: #4ade80; }
+    .status.err { color: #f87171; }
+    .status.loading { color: rgba(255,180,0,0.6); }
+    .preview-strip {
+      margin-top: 24px;
+      background: linear-gradient(90deg, #090909, #1a1a1a, #090909);
+      border: 1px solid rgba(255,180,0,0.15);
+      border-radius: 8px;
+      overflow: hidden;
+      height: 32px;
+    }
+    .preview-track {
+      display: flex;
+      animation: ticker-scroll 20s linear infinite;
+      white-space: nowrap;
+      padding: 8px 0;
+    }
+    .preview-text {
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #ffb400;
+      padding: 0 48px;
+    }
+    @keyframes ticker-scroll { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+    .char-count {
+      font-size: 10px;
+      color: rgba(255,255,255,0.25);
+      text-align: right;
+      margin-top: 6px;
+    }
+    .token-note {
+      font-size: 10px;
+      color: rgba(255,255,255,0.2);
+      margin-top: -14px;
+      margin-bottom: 20px;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Ticker Control</h1>
+    <p class="subtitle">Update the scrolling announcement bar</p>
+
+    <label for="ghtoken">GitHub Token</label>
+    <input type="password" id="ghtoken" placeholder="ghp_xxxxxxxxxxxx" autocomplete="off"/>
+    <p class="token-note">Fine-grained token with repo Contents write access</p>
+
+    <label for="msg">Ticker Message</label>
+    <textarea id="msg" placeholder="Type your announcement here..."></textarea>
+    <div class="char-count"><span id="chars">0</span> characters</div>
+
+    <div class="toggle-row">
+      <span class="toggle-label">TICKER VISIBLE</span>
+      <label class="toggle">
+        <input type="checkbox" id="enabled" checked/>
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="actions">
+      <button class="btn-clear" onclick="clearTicker()">Clear</button>
+      <button class="btn-save" id="saveBtn" onclick="saveTicker()">Save & Deploy</button>
+    </div>
+
+    <div class="status" id="status"></div>
+
+    <div class="preview-strip" id="preview" style="display:none">
+      <div class="preview-track">
+        <span class="preview-text" id="pv1"></span>
+        <span class="preview-text" id="pv2"></span>
+        <span class="preview-text" id="pv3"></span>
+        <span class="preview-text" id="pv4"></span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var REPO = 'this-is-oats-mgmt/fookn-oats-main';
+    var FILE = 'ticker.json';
+    var BRANCH = 'main';
+    var API = 'https://api.github.com/repos/' + REPO + '/contents/' + FILE;
+
+    var msgEl = document.getElementById('msg');
+    var enabledEl = document.getElementById('enabled');
+    var statusEl = document.getElementById('status');
+    var saveBtn = document.getElementById('saveBtn');
+    var previewEl = document.getElementById('preview');
+    var currentSha = null;
+
+    function setStatus(text, cls) {
+      statusEl.textContent = text;
+      statusEl.className = 'status ' + (cls || '');
+    }
+
+    function updatePreview() {
+      var t = msgEl.value.trim();
+      document.getElementById('chars').textContent = msgEl.value.length;
+      if (t) {
+        var full = t + ' \u2022 ';
+        ['pv1','pv2','pv3','pv4'].forEach(function(id) {
+          document.getElementById(id).textContent = full;
+        });
+        previewEl.style.display = 'block';
+      } else {
+        previewEl.style.display = 'none';
+      }
+    }
+
+    msgEl.addEventListener('input', updatePreview);
+
+    // Load current ticker.json from GitHub
+    fetch('/ticker.json?nocache=' + Date.now())
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (d) {
+          msgEl.value = d.text || '';
+          enabledEl.checked = d.enabled !== false;
+          updatePreview();
+          setStatus('Current ticker loaded', '');
+        }
+      })
+      .catch(function() { setStatus('Could not load current ticker', 'err'); });
+
+    function getToken() {
+      return document.getElementById('ghtoken').value.trim();
+    }
+
+    function saveTicker() {
+      var token = getToken();
+      if (!token) { setStatus('Enter your GitHub token first', 'err'); return; }
+
+      var text = msgEl.value.trim();
+      var enabled = enabledEl.checked;
+
+      saveBtn.disabled = true;
+      setStatus('Fetching current file SHA...', 'loading');
+
+      // First get the current SHA (required by GitHub API to update a file)
+      fetch(API + '?ref=' + BRANCH, {
+        headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.v3+json' }
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(meta) {
+        currentSha = meta.sha;
+        var content = JSON.stringify({ text: text, enabled: enabled, updatedAt: new Date().toISOString() }, null, 2);
+        var encoded = btoa(unescape(encodeURIComponent(content)));
+
+        setStatus('Pushing to GitHub...', 'loading');
+
+        return fetch(API, {
+          method: 'PUT',
+          headers: {
+            'Authorization': 'token ' + token,
+            'Accept': 'application/vnd.github.v3+json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            message: 'Update ticker: ' + (enabled ? text.substring(0, 40) : 'disabled'),
+            content: encoded,
+            sha: currentSha,
+            branch: BRANCH
+          })
+        });
+      })
+      .then(function(r) {
+        if (!r.ok) throw new Error('GitHub API error: ' + r.status);
+        return r.json();
+      })
+      .then(function() {
+        setStatus('Saved! Live in ~30 seconds after GitHub Pages rebuilds.', 'ok');
+      })
+      .catch(function(e) { setStatus(e.message, 'err'); })
+      .finally(function() { saveBtn.disabled = false; });
+    }
+
+    function clearTicker() {
+      msgEl.value = '';
+      enabledEl.checked = false;
+      updatePreview();
+    }
+  </script>
+</body>
+</html>

@@ -5,106 +5,176 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <meta name="robots" content="noindex, nofollow"/>
   <title>FOOK'N OATS</title>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Playfair+Display:wght@900&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=Playfair+Display:wght@900&display=swap" rel="stylesheet"/>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     :root{
       --gold:#ffb400;
       --bg:#090909;
-      --bg2:#111;
-      --bg3:#1a1a1a;
-      --border:rgba(255,180,0,0.15);
-      --text:#e0e0e0;
-      --muted:rgba(255,255,255,0.4);
-      --font:'IBM Plex Mono',monospace;
+      --bg2:rgba(10,10,10,0.6);
+      --border:rgba(255,180,0,0.2);
+      --text:#fff;
+      --muted:rgba(255,255,255,0.5);
+      --mono:'IBM Plex Mono',monospace;
+      --serif:'Playfair Display',Georgia,serif;
     }
-    body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh}
+    html,body{height:100%;background:var(--bg);color:var(--text);font-family:Georgia,serif;overflow-x:hidden}
 
-    /* TICKER */
-    #ticker-bar{display:none;width:100%;background:linear-gradient(90deg,var(--bg),var(--bg3),var(--bg));border-bottom:1px solid var(--border);overflow:hidden;position:relative;z-index:9999}
-    .ticker-track{display:flex;animation:ticker-scroll 25s linear infinite;white-space:nowrap;padding:8px 0}
-    .ticker-text{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);padding:0 48px}
+    /* ── SLIDESHOW BACKGROUND ── */
+    #slideshow{position:fixed;inset:0;z-index:0;overflow:hidden}
+    #slideshow img{position:absolute;inset:-5%;width:110%;height:110%;object-fit:cover;filter:brightness(0.22) saturate(0.5);opacity:0;transition:opacity 1.2s ease-in-out}
+    #slideshow img.active{opacity:1}
+    #hero-canvas{position:fixed;inset:0;z-index:1;pointer-events:none;width:100%;height:100%}
+    #vignette{position:fixed;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse at center,transparent 30%,rgba(9,9,9,0.65) 100%)}
+
+    /* ── TICKER ── */
+    #ticker-bar{position:fixed;top:0;left:0;right:0;z-index:200;background:linear-gradient(90deg,#090909,#1a1a1a,#090909);border-bottom:1px solid rgba(255,180,0,0.3);overflow:hidden;display:none}
+    .ticker-track{display:flex;animation:ticker-scroll 20s linear infinite;white-space:nowrap;padding:8px 0}
+    .ticker-text{font-family:var(--mono);font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);padding:0 48px}
     @keyframes ticker-scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 
-    /* NAV */
-    nav{background:rgba(9,9,9,0.95);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:2px;position:sticky;top:0;z-index:100;overflow-x:auto}
-    nav a{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:14px 12px;text-decoration:none;white-space:nowrap;transition:color 0.2s;border-bottom:2px solid transparent}
-    nav a:hover,nav a.active{color:var(--gold);border-bottom-color:var(--gold)}
+    /* ── NAV ── */
+    #nav-wrap{position:fixed;left:0;right:0;z-index:200;background:rgba(9,9,9,0.95);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,0.07)}
+    #nav-top{display:flex;align-items:center;justify-content:space-between;height:36px;padding:0 20px;border-bottom:1px solid rgba(255,255,255,0.04)}
+    #nav-logo{font-family:var(--mono);font-weight:700;font-size:12px;letter-spacing:.15em;color:var(--gold);cursor:pointer}
+    #photos-btn{background:none;border:1px solid rgba(255,180,0,0.35);color:var(--gold);font-family:var(--mono);font-size:9px;cursor:pointer;letter-spacing:.1em;padding:3px 10px}
+    #nav-tabs{display:flex;align-items:center;gap:18px;height:32px;padding:0 20px;overflow-x:auto}
+    .nav-tab{background:none;border:none;color:rgba(255,255,255,0.45);font-family:var(--mono);font-size:9px;cursor:pointer;letter-spacing:.1em;padding:0;white-space:nowrap;flex-shrink:0;transition:color .2s}
+    .nav-tab.active,.nav-tab:hover{color:var(--gold)}
 
-    /* SECTIONS */
-    section{padding:60px 24px;max-width:900px;margin:0 auto;display:none}
-    section.active{display:block}
+    /* ── MAIN CONTENT ── */
+    #app{position:relative;z-index:3;max-width:900px;margin:0 auto;padding:120px 32px 80px}
 
-    /* HOME — FULLSCREEN SLIDESHOW HERO */
-    #sec-home{padding:0;max-width:none;position:relative;height:100vh;overflow:hidden;display:none}
-    #sec-home.active{display:flex;flex-direction:column;justify-content:center;align-items:center}
+    /* ── BACK BUTTON ── */
+    @keyframes back-pulse{0%,100%{opacity:1;text-shadow:0 0 8px #ffb400,0 0 20px #ffb400,0 0 40px rgba(255,180,0,.6)}50%{opacity:.6;text-shadow:0 0 4px #ffb400,0 0 10px rgba(255,180,0,.4)}}
+    @keyframes back-border-pulse{0%,100%{box-shadow:0 0 8px rgba(255,180,0,.8),0 0 20px rgba(255,180,0,.4),inset 0 0 8px rgba(255,180,0,.1);border-color:#ffb400}50%{box-shadow:0 0 4px rgba(255,180,0,.4),0 0 10px rgba(255,180,0,.2),inset 0 0 4px rgba(255,180,0,.05);border-color:rgba(255,180,0,.6)}}
+    .back-btn{background:none;border:1px solid var(--gold);color:var(--gold);font-family:var(--mono);font-size:11px;cursor:pointer;padding:8px 16px;margin-bottom:32px;letter-spacing:.15em;display:flex;align-items:center;gap:8px;animation:back-border-pulse 1.8s ease-in-out infinite;transition:all .15s}
+    .back-btn span{animation:back-pulse 1.8s ease-in-out infinite}
+    .back-btn:hover{animation:none!important;box-shadow:0 0 16px rgba(255,180,0,1),0 0 40px rgba(255,180,0,.6),inset 0 0 12px rgba(255,180,0,.2)!important;border-color:#ffb400!important;background:rgba(255,180,0,.08)!important}
+    .back-btn:hover span{animation:none!important;text-shadow:0 0 12px #ffb400,0 0 30px #ffb400,0 0 60px rgba(255,180,0,.8)!important}
 
-    /* Slideshow background */
-    .slide-bg{position:absolute;inset:0;z-index:0}
-    .slide-bg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(22%) saturate(50%);opacity:0;transition:opacity 1.5s ease-in-out}
-    .slide-bg img.active{opacity:1}
+    /* ── CARDS ── */
+    .card{border:1px solid rgba(255,255,255,0.1);background:var(--bg2);padding:24px 22px;cursor:pointer;transition:all .2s;position:relative;backdrop-filter:blur(6px)}
+    .card:hover{border-color:var(--gold);background:rgba(255,180,0,.05)}
+    .card-icon{font-size:20px;margin-bottom:8px;color:var(--gold)}
+    .card-label{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--gold);margin-bottom:6px;text-transform:uppercase}
+    .card-tagline{color:rgba(255,255,255,.55);font-size:13px;line-height:1.5}
+    .card-view{position:absolute;bottom:14px;right:16px;font-family:var(--mono);font-size:10px;color:var(--gold);display:none}
+    .card:hover .card-view{display:block}
+    .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+    .card-grid-sm{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
 
-    /* Canvas grid overlay */
-    #hero-canvas{position:absolute;inset:0;z-index:1;pointer-events:none}
+    /* ── SECTION HEADERS ── */
+    .sec-tag{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--gold);margin-bottom:12px}
+    .sec-title{font-family:var(--serif);font-size:clamp(28px,5vw,52px);font-weight:900;margin:0 0 12px;letter-spacing:-.02em}
+    .sec-desc{color:rgba(255,255,255,.5);font-size:15px;line-height:1.75;max-width:540px;margin-bottom:36px}
 
-    /* Vignette */
-    .vignette{position:absolute;inset:0;z-index:2;pointer-events:none;background:radial-gradient(ellipse at center, transparent 40%, rgba(9,9,9,0.85) 100%)}
+    /* ── HOME ── */
+    .home-eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--gold);margin-bottom:16px}
+    .home-title{font-family:var(--serif);font-size:clamp(42px,7vw,88px);font-weight:900;line-height:1;letter-spacing:-.03em;margin:0 0 20px}
+    .home-title span{color:var(--gold)}
+    .home-desc{font-size:clamp(14px,2vw,18px);color:rgba(255,255,255,.55);max-width:560px;line-height:1.75;margin:0 0 32px}
+    .home-btns{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:64px}
+    .btn-primary{background:var(--gold);color:#0a0a0a;border:none;padding:13px 28px;font-family:var(--mono);font-weight:700;font-size:12px;cursor:pointer;letter-spacing:.1em}
+    .btn-secondary{background:none;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.6);padding:13px 28px;font-family:var(--mono);font-size:12px;cursor:pointer;letter-spacing:.1em}
+    .btn-ghost{background:none;border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.4);padding:13px 28px;font-family:var(--mono);font-size:12px;cursor:pointer;letter-spacing:.1em}
 
-    /* Hero content */
-    .home-content{position:relative;z-index:3;text-align:center;padding:0 24px}
-    .home-eyebrow{font-size:10px;letter-spacing:4px;color:rgba(255,180,0,0.7);text-transform:uppercase;margin-bottom:24px}
-    .home-title{font-size:clamp(56px,12vw,120px);letter-spacing:-2px;color:#fff;font-weight:900;line-height:0.95;font-family:'Playfair Display',serif}
-    .home-sub{font-size:11px;letter-spacing:4px;color:rgba(255,255,255,0.4);margin-top:20px;text-transform:uppercase}
-    .home-nav-cards{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:48px}
-    .home-nav-card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,180,0,0.2);border-radius:6px;padding:12px 20px;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.5);cursor:pointer;transition:all 0.2s;backdrop-filter:blur(4px)}
-    .home-nav-card:hover{border-color:var(--gold);color:var(--gold);background:rgba(255,180,0,0.06)}
+    /* ── AI ROUTER ── */
+    .ai-box{border:1px solid var(--border);padding:24px 28px;background:rgba(9,9,9,.7);margin-bottom:64px;backdrop-filter:blur(4px)}
+    .ai-label{font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--gold);margin-bottom:4px}
+    .ai-sublabel{color:rgba(255,255,255,.35);font-size:12px;margin-bottom:16px;font-family:var(--mono)}
+    .ai-row{display:flex;gap:10px}
+    .ai-input{flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);padding:10px 14px;color:#fff;font-family:var(--mono);font-size:13px;outline:none}
+    .ai-btn{background:var(--gold);color:#0a0a0a;border:none;padding:10px 20px;font-family:var(--mono);font-weight:700;font-size:12px;cursor:pointer;letter-spacing:.08em;white-space:nowrap}
+    .ai-btn:disabled{background:rgba(255,180,0,.3);cursor:wait}
+    .ai-q{margin-top:14px;font-family:var(--mono);font-size:12px;color:rgba(255,255,255,.3)}
+    .ai-reply{background:rgba(255,180,0,.06);border:1px solid rgba(255,180,0,.25);border-radius:4px;padding:14px 18px;margin-top:10px;font-family:var(--mono);font-size:13px;color:#e8d5a3;line-height:1.7}
+    .ai-reply-label{color:var(--gold);margin-right:8px}
+    .ai-route-btn{display:block;margin-top:12px;background:var(--gold);color:#0a0a0a;border:none;padding:7px 16px;font-family:var(--mono);font-weight:700;font-size:12px;cursor:pointer;letter-spacing:.08em}
 
-    /* Stories photo grid */
-    .show-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:2px;margin-top:32px}
-    .show-grid img{width:100%;aspect-ratio:16/9;object-fit:cover;filter:grayscale(20%);transition:filter 0.3s}
-    .show-grid img:hover{filter:grayscale(0%) brightness(1.1)}
+    /* ── UNIVERSE LABEL ── */
+    .universe-label{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:rgba(255,255,255,.3);margin-bottom:20px}
 
-    /* CARDS */
-    .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-top:8px}
-    .card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:20px;transition:border-color 0.2s;cursor:default}
-    .card:hover{border-color:rgba(255,180,0,0.4)}
-    .card-icon{font-size:20px;margin-bottom:10px}
-    .card-label{font-size:12px;letter-spacing:2px;font-weight:600;color:#fff;text-transform:uppercase;margin-bottom:4px}
-    .card-tagline{font-size:10px;letter-spacing:1px;color:var(--gold);margin-bottom:10px;text-transform:uppercase}
-    .card-desc{font-size:11px;color:var(--muted);line-height:1.6}
+    /* ── FOOTER ── */
+    .footer{margin-top:60px;border-top:1px solid rgba(255,255,255,.06);padding-top:24px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+    .footer span{font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.2)}
 
-    /* SECTION HEADER */
-    .section-head{margin-bottom:32px}
-    .section-title{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
-    .section-tagline{font-size:clamp(18px,3vw,28px);font-weight:600;color:#fff;line-height:1.3}
+    /* ── DETAIL PAGE ── */
+    .detail-wrap{max-width:680px;margin:0 auto;padding:0 0 60px}
+    .detail-icon{font-size:30px;margin-bottom:10px;color:var(--gold)}
+    .detail-title{font-family:var(--serif);font-size:clamp(28px,5vw,48px);font-weight:900;margin:0 0 8px;letter-spacing:-.02em}
+    .detail-sub{color:var(--gold);font-family:var(--mono);font-size:11px;letter-spacing:.12em;margin-bottom:24px}
+    .detail-desc{color:rgba(255,255,255,.7);font-size:15px;line-height:1.8;margin-bottom:28px}
+    .bullet-list{margin-bottom:36px}
+    .bullet-item{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;color:rgba(255,255,255,.65);font-size:14px}
+    .bullet-dot{color:var(--gold);margin-top:2px;flex-shrink:0}
+    .inquiry-box{border:1px solid rgba(255,180,0,.2);padding:28px 24px;background:rgba(255,180,0,.03);margin-bottom:20px}
+    .inquiry-label{font-family:var(--mono);font-size:10px;letter-spacing:.15em;color:var(--gold);margin-bottom:20px}
+    .field-label{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.15em;color:rgba(255,255,255,.4);margin-bottom:6px}
+    .field-input{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.15);padding:10px 12px;color:#fff;font-family:var(--mono);font-size:13px;outline:none;box-sizing:border-box;margin-bottom:16px}
+    .field-textarea{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.15);padding:10px 12px;color:#fff;font-family:var(--mono);font-size:13px;outline:none;resize:vertical;box-sizing:border-box;margin-bottom:20px}
+    .submit-btn{background:var(--gold);color:#0a0a0a;border:none;padding:12px 28px;font-family:var(--mono);font-weight:700;font-size:12px;cursor:pointer;letter-spacing:.12em}
+    .submit-btn:disabled{background:rgba(255,180,0,.3);cursor:not-allowed}
+    .direct-email{margin-top:12px;font-size:11px;color:rgba(255,255,255,.25);font-family:var(--mono)}
+    .calendly-box{padding:20px 24px;border:1px solid rgba(255,255,255,.06)}
+    .calendly-label{font-family:var(--mono);font-size:10px;letter-spacing:.15em;color:rgba(255,255,255,.3);margin-bottom:10px}
+    .calendly-btn{background:none;border:1px solid rgba(255,180,0,.4);color:var(--gold);padding:10px 22px;font-family:var(--mono);font-size:11px;cursor:pointer;letter-spacing:.1em}
+    .brand-note{padding:20px 24px;border:1px solid rgba(255,180,0,.15);background:rgba(255,180,0,.02)}
+    .brand-note-label{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:rgba(255,255,255,.3);margin-bottom:8px}
+    .brand-note-text{color:rgba(255,255,255,.4);font-size:13px;line-height:1.6}
 
-    /* SOCIAL */
-    .social-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:8px}
-    .social-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px;text-decoration:none;display:block;transition:border-color 0.2s}
-    .social-card:hover{border-color:rgba(255,180,0,0.4)}
-    .social-icon{font-size:18px;margin-bottom:8px}
-    .social-platform{font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:2px}
-    .social-handle{font-size:12px;color:var(--gold);font-weight:600;margin-bottom:4px}
-    .social-desc{font-size:10px;color:var(--muted)}
+    /* ── ABOUT ── */
+    .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .about-link-btn{background:none;border:1px solid rgba(255,255,255,.08);padding:14px 16px;color:rgba(255,255,255,.5);font-family:var(--mono);font-size:11px;letter-spacing:.08em;cursor:pointer;text-align:left}
+    .about-link-btn span{color:var(--gold);margin-right:8px}
 
-    /* ABOUT */
-    .about-headline{font-size:clamp(24px,4vw,42px);font-weight:600;line-height:1.2;margin-bottom:16px}
-    .about-headline span{color:var(--gold)}
-    .about-body{font-size:13px;color:var(--muted);line-height:1.8;margin-bottom:32px;max-width:620px}
-    .tree{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:24px;margin-top:8px}
-    .tree-title{font-size:9px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:16px}
-    .tree-item{padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05)}
-    .tree-item:last-child{border-bottom:none}
-    .tree-item-label{font-size:11px;color:var(--gold);margin-bottom:3px;letter-spacing:1px}
-    .tree-item-desc{font-size:11px;color:var(--muted);line-height:1.5}
+    /* ── GALLERY ── */
+    #gallery{position:fixed;inset:0;z-index:300;background:rgba(9,9,9,.97);overflow-y:auto;padding:80px 32px 60px;display:none}
+    .gallery-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;max-width:900px;margin-left:auto;margin-right:auto}
+    .gallery-count{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--gold)}
+    .gallery-close{background:none;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.5);font-family:var(--mono);font-size:11px;padding:8px 16px;cursor:pointer}
+    .gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px;max-width:900px;margin:0 auto}
+    .gallery-thumb{aspect-ratio:16/9;background-size:cover;background-position:center;cursor:pointer;filter:brightness(.75);transition:all .2s}
+    .gallery-thumb:hover{filter:brightness(1);transform:scale(1.02)}
 
-    /* TICKER ADMIN LINK */
-    .ticker-admin-link{display:inline-block;margin-top:24px;font-size:9px;letter-spacing:2px;color:var(--muted);text-decoration:none;text-transform:uppercase;border:1px solid var(--border);padding:6px 12px;border-radius:4px}
-    .ticker-admin-link:hover{color:var(--gold);border-color:var(--gold)}
+    /* ── LIGHTBOX ── */
+    #lightbox{position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.95);display:none;align-items:center;justify-content:center;cursor:zoom-out}
+    #lightbox img{max-width:90vw;max-height:90vh;object-fit:contain}
+    #lightbox-counter{position:absolute;bottom:24px;font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.3)}
+    .lb-btn{position:absolute;top:50%;transform:translateY(-50%);background:none;border:1px solid rgba(255,255,255,.2);color:#fff;font-family:var(--mono);font-size:18px;padding:12px 18px;cursor:pointer}
+    #lb-prev{left:24px}
+    #lb-next{right:24px}
+
+    /* form error/success */
+    .form-err{color:#ff5555;font-family:var(--mono);font-size:11px;margin-bottom:12px}
+    .form-success{color:var(--gold);font-family:var(--mono);font-size:13px;line-height:1.8}
   </style>
 </head>
 <body>
 
+<!-- SLIDESHOW -->
+<div id="slideshow"></div>
+<canvas id="hero-canvas"></canvas>
+<div id="vignette"></div>
+
+<!-- GALLERY MODAL -->
+<div id="gallery">
+  <div class="gallery-header">
+    <div class="gallery-count" id="gallery-count"></div>
+    <button class="gallery-close" onclick="closeGallery()">CLOSE ✕</button>
+  </div>
+  <div class="gallery-grid" id="gallery-grid"></div>
+</div>
+
+<!-- LIGHTBOX -->
+<div id="lightbox" onclick="closeLightbox()">
+  <img id="lb-img" src="" alt=""/>
+  <div id="lightbox-counter"></div>
+  <button class="lb-btn" id="lb-prev" onclick="lbNav(-1,event)">←</button>
+  <button class="lb-btn" id="lb-next" onclick="lbNav(1,event)">→</button>
+</div>
+
+<!-- TICKER -->
 <div id="ticker-bar">
   <div class="ticker-track">
     <span class="ticker-text" id="t1"></span>
@@ -114,276 +184,526 @@
   </div>
 </div>
 
-<nav id="nav"></nav>
+<!-- NAV -->
+<div id="nav-wrap">
+  <div id="nav-top">
+    <div id="nav-logo" onclick="showView('home')">FOOK'N OATS</div>
+    <button id="photos-btn" onclick="openGallery()">PHOTOS</button>
+  </div>
+  <div id="nav-tabs"></div>
+</div>
 
+<!-- APP -->
 <div id="app"></div>
 
+<!-- CALENDLY -->
 <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet"/>
 <script src="https://assets.calendly.com/assets/external/widget.js" async></script>
 <script src="./site.js"></script>
 <script>
-// ── RENDER ENGINE ──────────────────────────────────────────
-function h(tag, attrs, ...children) {
-  var el = document.createElement(tag);
-  if (attrs) Object.entries(attrs).forEach(([k,v]) => {
-    if (k === 'class') el.className = v;
-    else if (k === 'href') el.href = v;
-    else if (k === 'src') el.src = v;
-    else if (k === 'alt') el.alt = v;
-    else if (k === 'target') el.target = v;
-    else el.setAttribute(k, v);
-  });
-  children.flat().forEach(c => {
-    if (c == null) return;
-    el.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
-  });
-  return el;
-}
+// ── DATA ─────────────────────────────────────────────────────────────────────
 
-var currentSection = 'home';
+const DEPARTMENTS = [
+  { id:"cad",       label:"CAD & Drafting",      icon:"◈", tagline:"Precision drafts. Light plots. Venue drawings.",         desc:"Vectorworks and AutoCAD drafting for lighting plots, rigging designs, stage layouts, and venue paperwork. Remote-deliverable. Turn around in days, not weeks.",                                                                                                         bullets:["Lighting plots (full-detail)","Rigging & truss layouts","Venue/stage ground plans","As-builts & documentation"],                     cta:"Request a Draft",   keywords:["cad","draft","plot","drawing","vectorworks","autocad","layout","lighting plot","venue","plan"] },
+  { id:"gaffer",    label:"Master Electrician",  icon:"⚡", tagline:"On-site crew chief. Lighting supervision.",             desc:"Experienced Master Electrician and Lighting Crew Chief available for tours, installs, and one-offs. Brings leadership, problem-solving, and a full toolkit to any rig.",                                                                                                  bullets:["Tour & one-off ME/crew chief","Lighting installs & load-ins","Troubleshooting & maintenance","Crew coordination"],                     cta:"Check Availability",keywords:["gaffer","electrician","crew","chief","me","touring","tour","load","rig","supervise","lighting crew"] },
+  { id:"led",       label:"LED Wall Tech",        icon:"▦", tagline:"Pixel-perfect builds. LED wall systems.",               desc:"LED wall construction, configuration, and in-show technician services. From spec to strike. Novastar, Brompton, ROE, and custom panels.",                                                                                                                             bullets:["LED wall build & config","In-show pixel tech","Processor programming","Panel inventory & maintenance"],                               cta:"Talk LED",          keywords:["led","pixel","wall","screen","novastar","brompton","roe","display","video wall","pixel tech"] },
+  { id:"consult",   label:"Consulting & Quotes",  icon:"◎", tagline:"Scoping, budgeting, and production advice.",            desc:"Not sure what you need yet? Start here. Project scoping, vendor recommendations, budget reviews, and production planning without the agency markup.",                                                                                                              bullets:["Project scoping calls","Budget & vendor review","RFP support","Production planning"],                                                  cta:"Book a Consult",    keywords:["consult","quote","scope","budget","plan","advice","help","not sure","recommend","rfp"] },
+  { id:"makerlab",  label:"Maker-Lab",            icon:"⚙", tagline:"Fabrication. Prototyping. Hands-on builds.",            desc:"In-house maker lab for custom fabrication, prototyping, and production builds. Laser CNC, 3D printing, embroidery, and modular bench systems — from concept to physical product.",                                                                                bullets:["Laser CNC & cutting","3D printing & prototyping","Custom fabrication","Modular bench systems"],                                       cta:"Start a Build",     keywords:["maker","fabricat","prototype","build","laser","cnc","3d print","embroidery","workshop","physical"] },
+  { id:"designnet", label:"Design Network",       icon:"◇", tagline:"Lighting production. Crew connections. Talent.",        desc:"A curated network of lighting production professionals, super-techs, and crew. LxProd coordination, talent sourcing, and the Crewfam ecosystem — connecting the right people to the right gigs.",                                                                    bullets:["Gig-to-crew matching","LxProd coordination","Talent sourcing","Crewfam ecosystem"],                                                    cta:"Join the Network",  keywords:["network","crew","talent","lxprod","crewfam","gig","match","production network","design network"] },
+];
 
-// ── NAV ────────────────────────────────────────────────────
-var nav = document.getElementById('nav');
-SITE.nav.forEach(function(item) {
-  var a = h('a', {href:'#', class: item.id === 'home' ? 'active' : ''}, item.label);
-  a.addEventListener('click', function(e) {
-    e.preventDefault();
-    showSection(item.id);
-  });
-  nav.appendChild(a);
+const BRANDS = [
+  { id:"revelator",  label:"Revelator Illuminae",  icon:"✦", tagline:"The creative lighting arm.",               desc:"Original lighting design, visuals programming, and previsualization services. Go4oats.vizzies — where the art of light meets live production.",                                             bullets:["Original lighting design","Visuals programming","Previsualization services","Go4oats.vizzies"] },
+  { id:"sleepwell",  label:"Sleepwell Sweetheart", icon:"♪", tagline:"Legacy band. EDM remixes. 20-year arc.",  desc:"The original band project — spanning two decades of music, from its legacy era through EDM remixes and the upcoming 20-year reunion event. A vinyl project is in the works.",             bullets:["EDM remix collection","Legacy catalog","20-year reunion event","Vinyl project in development"] },
+  { id:"aioatmeal",  label:"AI Oatmeal",           icon:"◉", tagline:"AI-powered creative pipeline.",            desc:"Meme generation, AI-assisted content creation, and storyboard development. Where machine learning meets the Oats aesthetic.",                                                            bullets:["AI content generation","Meme pipeline","Storyboard development","Machine learning workflows"] },
+  { id:"ghosted",    label:"Ghosted Oats",         icon:"◌", tagline:"Raw. Unfiltered. No brand guidelines.",    desc:"The unfiltered identity — raw aesthetic explorations and personal reflections. No polish, no brand guidelines. Just truth in visual form.",                                               bullets:["Raw aesthetic explorations","Personal reflections","Visual storytelling","Unfiltered documentation"] },
+  { id:"crypto",     label:"Cryptos4Oats",         icon:"₿", tagline:"Market thoughts. Decentralized futures.",  desc:"Crypto market analysis, decentralized crew union concepts, and a community marketplace for creators, makers, and crew. Transparently matching techs with gigs.",                       bullets:["Crypto market thoughts","Decentralized crew union","Community marketplace","Transparent gig matching"] },
+  { id:"fallingstar",label:"Falling Star",         icon:"★", tagline:"DJ persona. Neon fever-dream. EDM community.", desc:"The DJ identity — neon fever-dream concepts and the EDM Oatmeal community. Where electronic music meets visual art meets live performance chaos.",                                   bullets:["DJ persona & performances","The EDM Oatmeal community","Neon visual concepts","Live performance chaos"] },
+];
+
+const SECTIONS = [
+  { id:"services", label:"Services",    icon:"⚡", tagline:"Production departments. Lighting, CAD, LED, fabrication, crew networking.",    desc:"Six production departments under one roof — CAD drafting, master electrician work, LED wall tech, consulting, the Maker-Lab, and a lighting crew Design Network." },
+  { id:"brands",   label:"Brands",      icon:"✦", tagline:"Six creative identities — from lighting art to crypto to DJ sets.",             desc:"Revelator Illuminae, Sleepwell Sweetheart, AI Oatmeal, Ghosted Oats, Cryptos4Oats, and Falling Star — each with its own voice, aesthetic, and purpose." },
+  { id:"studio",   label:"Studio",      icon:"◈", tagline:"Music production, livestreaming, and the Bobeng Builds workshop.",              desc:"The MIDI Music Machine, Mac Mini Deck, iPad Surface, full livestream setup, and the Bobeng Builds fabrication workshop — all under one roof." },
+  { id:"stories",  label:"Stories",     icon:"◎", tagline:"Pretty Lights tours, Electric Forest, desert road trips.",                      desc:"From Pretty Lights runs at Hampton and Red Rocks, to wrong-way Ubers at Electric Forest, to desert resets at Joshua Tree and the Integratron." },
+  { id:"edm",      label:"EDM Oatmeal", icon:"⊕", tagline:"Live feed. Ground crew. Scanner. The pulse of EDM.",                           desc:"Industry news, ground crew live feeds, and the Scan → Store → Stream pipeline. Automated hashtag scanning, event tracking, and real-time community pulse." },
+  { id:"connect",  label:"Connect",     icon:"◆", tagline:"Social networks, media archive, and future structures.",                        desc:"The Will-Oats Universe spans multiple platforms and identities. Here's where to find everything." },
+  { id:"about",    label:"About",       icon:"◇", tagline:"The Will-Oats Tree. Higher self. Transformation era.",                          desc:"The origin story, the Will-Oats Tree philosophy, and the transformation era. Where higher-self thinking meets hands-on production work." },
+];
+
+const AI_KEYWORDS = [
+  ...DEPARTMENTS.map(d => ({ id:d.id, type:"dept", keywords:d.keywords, label:d.label, tagline:d.tagline })),
+  { id:"brands",  type:"section", keywords:["brand","revelator","sleepwell","ai oatmeal","ghosted","crypto","falling star","dj","music","identity"], label:"Brands",      tagline:"Six creative identities under the Will-Oats umbrella." },
+  { id:"studio",  type:"section", keywords:["studio","midi","livestream","bobeng","production","mix","dj set"],                                        label:"Studio",      tagline:"Music production, livestreaming, and the Bobeng Builds workshop." },
+  { id:"stories", type:"section", keywords:["story","stories","tour","pretty lights","electric forest","red rocks","joshua tree","festival","road"],   label:"Stories",     tagline:"Pretty Lights tours, Electric Forest, desert road trips." },
+  { id:"edm",     type:"section", keywords:["edm","oatmeal","feed","scanner","hashtag","community","electronic","news"],                               label:"EDM Oatmeal", tagline:"Live feed. Ground crew. Scanner. The pulse of EDM." },
+  { id:"connect", type:"section", keywords:["connect","social","instagram","contact","follow","link","find"],                                           label:"Connect",     tagline:"Social networks, media archive, and future structures." },
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+var currentView = "home";
+var aiReplies = [];
+var aiTyping = false;
+var lbIndex = 0;
+var formName = "", formEmail = "", formPhone = "", formDetail = "";
+
+// ── SLIDESHOW ─────────────────────────────────────────────────────────────────
+var slideEl = document.getElementById("slideshow");
+var showImgs = SITE.shows;
+showImgs.forEach(function(src, i) {
+  var img = document.createElement("img");
+  img.src = src;
+  img.alt = "";
+  if (i === 0) img.classList.add("active");
+  slideEl.appendChild(img);
 });
+var slideImages = slideEl.querySelectorAll("img");
+var slideCur = 0;
+setInterval(function() {
+  slideImages[slideCur].classList.remove("active");
+  slideCur = (slideCur + 1) % slideImages.length;
+  slideImages[slideCur].classList.add("active");
+}, 5000);
 
-function showSection(id) {
-  currentSection = id;
-  document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
-  var sec = document.getElementById('sec-' + id);
-  if (sec) sec.classList.add('active');
-  var navLink = Array.from(nav.querySelectorAll('a')).find(a => a.textContent === SITE.nav.find(n=>n.id===id)?.label);
-  if (navLink) navLink.classList.add('active');
-  window.scrollTo(0,0);
-  // redraw canvas when home becomes visible
-  if (id === 'home') {
-    var c = document.getElementById('hero-canvas');
-    if (c) window.dispatchEvent(new Event('resize'));
-  }
-}
-
-// ── TICKER ─────────────────────────────────────────────────
-fetch('./ticker.json?nocache=' + Date.now())
-  .then(r => r.json())
-  .then(d => {
-    if (d && d.enabled && d.text) {
-      var full = d.text + ' • ';
-      ['t1','t2','t3','t4'].forEach(id => document.getElementById(id).textContent = full);
-      document.getElementById('ticker-bar').style.display = 'block';
-    }
-  }).catch(()=>{});
-
-// ── SECTIONS ───────────────────────────────────────────────
-var app = document.getElementById('app');
-
-// HOME — fullscreen slideshow hero
-var slideBg = h('div', {class:'slide-bg'});
-SITE.shows.forEach(function(src, i) {
-  var img = h('img', {src: src, alt: ''});
-  if (i === 0) img.classList.add('active');
-  slideBg.appendChild(img);
-});
-
-var heroCanvas = document.createElement('canvas');
-heroCanvas.id = 'hero-canvas';
-
-var vignette = h('div', {class:'vignette'});
-
-var homeContent = h('div', {class:'home-content'},
-  h('div', {class:'home-eyebrow'}, 'Production · Design · Creation'),
-  h('div', {class:'home-title'}, "FOOK'N OATS"),
-  h('div', {class:'home-sub'}, 'The Will-Oats Universe — One Ecosystem. Multiple Identities.'),
-  h('div', {class:'home-nav-cards'},
-    ...SITE.nav.filter(n => n.id !== 'home').map(function(n) {
-      var card = h('div', {class:'home-nav-card'}, n.label);
-      card.onclick = function(){ showSection(n.id); };
-      return card;
-    })
-  )
-);
-
-var homeSection = h('section', {id:'sec-home', class:'active'},
-  slideBg, heroCanvas, vignette, homeContent
-);
-app.appendChild(homeSection);
-
-// Slideshow crossfade
+// ── CANVAS ────────────────────────────────────────────────────────────────────
 (function() {
-  var imgs = slideBg.querySelectorAll('img');
-  var cur = 0;
-  setInterval(function() {
-    imgs[cur].classList.remove('active');
-    cur = (cur + 1) % imgs.length;
-    imgs[cur].classList.add('active');
-  }, 5000);
-})();
-
-// Canvas grid overlay
-(function() {
-  var canvas = heroCanvas;
+  var canvas = document.getElementById("hero-canvas");
+  var ctx = canvas.getContext("2d");
+  var dots = [];
   function resize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    var ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.strokeStyle = 'rgba(255,180,0,0.025)';
-    ctx.lineWidth = 1;
-    var grid = 60;
-    for (var x = 0; x < canvas.width; x += grid) {
-      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
-    }
-    for (var y = 0; y < canvas.height; y += grid) {
-      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
-    }
+    dots = Array.from({length:40}, function() {
+      return { x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: 0.5+Math.random()*1.5, alpha: 0.05+Math.random()*0.12, pulse: Math.random()*Math.PI*2 };
+    });
   }
   resize();
-  window.addEventListener('resize', resize);
+  window.addEventListener("resize", resize);
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = "rgba(255,255,255,0.025)"; ctx.lineWidth = 0.5;
+    for (var x = 0; x < canvas.width; x += 60) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,canvas.height); ctx.stroke(); }
+    for (var y = 0; y < canvas.height; y += 60) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(canvas.width,y); ctx.stroke(); }
+    dots.forEach(function(d) {
+      d.pulse += 0.015;
+      ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI*2);
+      ctx.fillStyle = "rgba(255,180,0,"+(d.alpha*(0.5+0.5*Math.sin(d.pulse)))+")";
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
 })();
 
-// SERVICES
-var servicesSection = h('section', {id:'sec-services'},
-  h('div', {class:'section-head'},
-    h('div', {class:'section-title'}, 'What We Do'),
-    h('div', {class:'section-tagline'}, 'Production departments. Lighting, CAD, LED, fabrication, crew networking.')
-  ),
-  h('div', {class:'card-grid'},
-    ...SITE.services.map(s => h('div', {class:'card'},
-      h('div', {class:'card-icon'}, s.icon),
-      h('div', {class:'card-label'}, s.label),
-      h('div', {class:'card-tagline'}, s.tagline),
-      h('div', {class:'card-desc'}, s.desc)
-    ))
-  )
-);
-app.appendChild(servicesSection);
+// ── TICKER ────────────────────────────────────────────────────────────────────
+fetch("./ticker.json?nocache=" + Date.now())
+  .then(function(r){return r.json()})
+  .then(function(d){
+    if (d && d.enabled && d.text) {
+      var full = d.text + " • ";
+      ["t1","t2","t3","t4"].forEach(function(id){ document.getElementById(id).textContent = full; });
+      document.getElementById("ticker-bar").style.display = "block";
+      document.getElementById("nav-wrap").style.top = "33px";
+      document.getElementById("app").style.paddingTop = "154px";
+    }
+  }).catch(function(){});
 
-// BRANDS
-var brandsSection = h('section', {id:'sec-brands'},
-  h('div', {class:'section-head'},
-    h('div', {class:'section-title'}, 'Brand Ecosystem'),
-    h('div', {class:'section-tagline'}, 'Six creative identities — from lighting art to crypto to DJ sets.')
-  ),
-  h('div', {class:'card-grid'},
-    ...SITE.brands.map(b => h('div', {class:'card'},
-      h('div', {class:'card-icon'}, b.icon),
-      h('div', {class:'card-label'}, b.label),
-      h('div', {class:'card-tagline'}, b.tagline),
-      h('div', {class:'card-desc'}, b.desc)
-    ))
-  )
-);
-app.appendChild(brandsSection);
+// ── NAV ───────────────────────────────────────────────────────────────────────
+var navTabs = document.getElementById("nav-tabs");
+var tabDefs = [
+  {label:"HOME",     view:"home"},
+  {label:"SERVICES", view:"section:services"},
+  {label:"BRANDS",   view:"section:brands"},
+  {label:"STUDIO",   view:"section:studio"},
+  {label:"STORIES",  view:"section:stories"},
+  {label:"EDM FEED", view:"section:edm"},
+  {label:"ABOUT",    view:"section:about"},
+  {label:"CONNECT",  view:"section:connect"},
+];
+tabDefs.forEach(function(t) {
+  var btn = document.createElement("button");
+  btn.className = "nav-tab" + (t.view === "home" ? " active" : "");
+  btn.textContent = t.label;
+  btn.dataset.view = t.view;
+  btn.onclick = function(){ showView(t.view); };
+  navTabs.appendChild(btn);
+});
 
-// STUDIO
-var studioSection = h('section', {id:'sec-studio'},
-  h('div', {class:'section-head'},
-    h('div', {class:'section-title'}, 'Studio'),
-    h('div', {class:'section-tagline'}, 'Music production, livestreaming, and the Bobeng Builds workshop.')
-  ),
-  h('div', {class:'card-grid'},
-    h('div', {class:'card'},
-      h('div', {class:'card-icon'}, '♫'),
-      h('div', {class:'card-label'}, 'Music Production'),
-      h('div', {class:'card-tagline'}, 'Tracks, remixes, and original compositions.'),
-      h('div', {class:'card-desc'}, 'The studio side of the Oats universe — music production, mixing, and original electronic compositions across multiple projects.')
-    ),
-    h('div', {class:'card'},
-      h('div', {class:'card-icon'}, '▶'),
-      h('div', {class:'card-label'}, 'Livestreaming'),
-      h('div', {class:'card-tagline'}, 'Go4Oats Show. Live production. On-stream.'),
-      h('div', {class:'card-desc'}, 'The Go4Oats Show livestream ecosystem — production, tech stack, streaming setup, and on-air content development.')
-    ),
-    h('div', {class:'card'},
-      h('div', {class:'card-icon'}, '⚙'),
-      h('div', {class:'card-label'}, 'Bobeng Builds'),
-      h('div', {class:'card-tagline'}, 'Workshop. Fabrication. Maker projects.'),
-      h('div', {class:'card-desc'}, 'The hands-on workshop arm — custom builds, fabrication projects, and the maker lab in action.')
-    )
-  )
-);
-app.appendChild(studioSection);
+function updateNav(view) {
+  document.querySelectorAll(".nav-tab").forEach(function(btn) {
+    var base = view.startsWith("dept:") ? "section:services" : view.startsWith("brand:") ? "section:brands" : view;
+    btn.classList.toggle("active", btn.dataset.view === base);
+  });
+}
 
-// STORIES
-var storiesSection = h('section', {id:'sec-stories'},
-  h('div', {class:'section-head'},
-    h('div', {class:'section-title'}, 'Road Stories'),
-    h('div', {class:'section-tagline'}, 'Pretty Lights tours, Electric Forest, desert road trips.')
-  ),
-  h('div', {class:'card-grid'},
-    ...SITE.stories.map(s => h('div', {class:'card'},
-      h('div', {class:'card-icon'}, s.icon),
-      h('div', {class:'card-label'}, s.label),
-      h('div', {class:'card-tagline'}, s.tagline),
-      h('div', {class:'card-desc'}, s.desc)
-    ))
-  ),
-  h('div', {class:'show-grid'},
-    ...SITE.shows.map(src => h('img', {src, alt:'Show'}))
-  )
-);
-app.appendChild(storiesSection);
+// ── GALLERY ───────────────────────────────────────────────────────────────────
+var galleryGrid = document.getElementById("gallery-grid");
+document.getElementById("gallery-count").textContent = "SHOW PHOTOS — " + showImgs.length + " IMAGES";
+showImgs.forEach(function(src, i) {
+  var div = document.createElement("div");
+  div.className = "gallery-thumb";
+  div.style.backgroundImage = "url(" + src + ")";
+  div.onclick = function(){ openLightbox(i); };
+  galleryGrid.appendChild(div);
+});
 
-// EDM
-var edmSection = h('section', {id:'sec-edm'},
-  h('div', {class:'section-head'},
-    h('div', {class:'section-title'}, 'EDM Oatmeal'),
-    h('div', {class:'section-tagline'}, 'Live feed. Ground crew. Scanner. The pulse of EDM.')
-  ),
-  h('div', {class:'card'},
-    h('div', {class:'card-icon'}, '⚡'),
-    h('div', {class:'card-label'}, 'EDM Oatmeal Feed'),
-    h('div', {class:'card-tagline'}, 'Live community. Real-time pulse.'),
-    h('div', {class:'card-desc'}, 'The EDM Oatmeal ground crew and community feed — real-time updates, show info, and the pulse of the electronic music world through the Oats lens.')
-  ),
-  h('div', {style:'margin-top:16px'},
-    h('a', {href:'./ticker-admin.html', class:'ticker-admin-link'}, '→ Ticker Control Panel')
-  )
-);
-app.appendChild(edmSection);
+function openGallery() { document.getElementById("gallery").style.display = "block"; }
+function closeGallery() { document.getElementById("gallery").style.display = "none"; }
 
-// ABOUT
-var aboutSection = h('section', {id:'sec-about'},
-  h('div', {class:'about-headline'},
-    'The Human Behind ', h('span', null, 'the Rig.')
-  ),
-  h('div', {class:'about-body'}, SITE.about.subheadline),
-  h('div', {class:'about-body'}, SITE.about.body),
-  h('div', {class:'tree'},
-    h('div', {class:'tree-title'}, '● THE WILL-OATS TREE (CORE)'),
-    ...SITE.about.tree.map(item => h('div', {class:'tree-item'},
-      h('div', {class:'tree-item-label'}, item.label),
-      h('div', {class:'tree-item-desc'}, item.desc)
-    ))
-  )
-);
-app.appendChild(aboutSection);
+function openLightbox(i) {
+  lbIndex = i;
+  document.getElementById("lb-img").src = showImgs[i];
+  document.getElementById("lightbox-counter").textContent = (i+1) + " / " + showImgs.length + " — CLICK TO CLOSE";
+  document.getElementById("lb-prev").style.display = i === 0 ? "none" : "block";
+  document.getElementById("lb-next").style.display = i === showImgs.length-1 ? "none" : "block";
+  document.getElementById("lightbox").style.display = "flex";
+}
+function closeLightbox() { document.getElementById("lightbox").style.display = "none"; }
+function lbNav(dir, e) {
+  e.stopPropagation();
+  openLightbox(lbIndex + dir);
+}
 
-// CONNECT
-var connectSection = h('section', {id:'sec-connect'},
-  h('div', {class:'section-head'},
-    h('div', {class:'section-title'}, 'Connect'),
-    h('div', {class:'section-tagline'}, 'Social networks, media archive, and future structures.')
-  ),
-  h('div', {class:'social-grid'},
-    ...SITE.social.map(s => h('a', {href: s.url, target:'_blank', class:'social-card'},
-      h('div', {class:'social-icon'}, s.icon),
-      h('div', {class:'social-platform'}, s.platform),
-      h('div', {class:'social-handle'}, s.handle),
-      h('div', {class:'social-desc'}, s.desc)
-    ))
-  )
-);
-app.appendChild(connectSection);
+// ── AI ROUTER ─────────────────────────────────────────────────────────────────
+function routeQuery(text) {
+  var t = text.toLowerCase();
+  for (var item of AI_KEYWORDS) {
+    if (item.keywords.some(function(k){ return t.includes(k); })) return item;
+  }
+  return null;
+}
 
-// ── CALENDLY ───────────────────────────────────────────────
-window.onload = function() {
+function handleAI(inputId, repliesId) {
+  var input = document.getElementById(inputId);
+  var q = input.value.trim();
+  if (!q || aiTyping) return;
+  input.value = "";
+  aiTyping = true;
+  setTimeout(function() {
+    aiTyping = false;
+    var route = routeQuery(q);
+    var msg = route
+      ? "Got it. Based on what you're describing, the right place is \"" + route.label + "\" — " + route.tagline + " Let me point you there."
+      : "Tell me a bit more about what you're looking for — services, brands, music, stories, or something else in the Will-Oats Universe?";
+    aiReplies.push({q, msg, route});
+    renderView(currentView);
+  }, 700 + Math.random()*400);
+  renderView(currentView);
+}
+
+function routeClick(route) {
+  if (route.type === "dept") showView("dept:" + route.id);
+  else showView("section:" + route.id);
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function el(tag, cls, html) {
+  var e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (html) e.innerHTML = html;
+  return e;
+}
+
+function backBtn(dest) {
+  var btn = el("button","back-btn");
+  btn.innerHTML = "<span>← BACK</span>";
+  btn.onclick = function(){ showView(dest); };
+  return btn;
+}
+
+function card(item, onclick) {
+  var div = el("div","card");
+  div.innerHTML = '<div class="card-icon">'+item.icon+'</div><div class="card-label">'+item.label+'</div><div class="card-tagline">'+item.tagline+'</div><div class="card-view">VIEW →</div>';
+  div.onclick = onclick;
+  return div;
+}
+
+function renderAIBox(inputId, repliesId, placeholder, btnLabel) {
+  var box = el("div","ai-box");
+  box.innerHTML = '<div class="ai-label">◆ AI INQUIRY ROUTER</div><div class="ai-sublabel">'+(placeholder||"Tell me what you're looking for — services, brands, music, stories — and I'll route you to the right place.")+'</div>';
+  var row = el("div","ai-row");
+  var inp = el("input"); inp.type="text"; inp.id=inputId; inp.className="ai-input"; inp.placeholder=placeholder||"e.g. 'I need a lighting plot' or 'tell me about the DJ brand'";
+  inp.onkeydown = function(e){ if(e.key==="Enter") handleAI(inputId,repliesId); };
+  var btn = el("button","ai-btn"); btn.textContent = aiTyping ? "..." : (btnLabel||"ASK THE WILL-OATS UNIVERSE");
+  if(aiTyping) btn.disabled = true;
+  btn.onclick = function(){ handleAI(inputId,repliesId); };
+  row.appendChild(inp); row.appendChild(btn);
+  box.appendChild(row);
+  var replyList = el("div"); replyList.id=repliesId;
+  var slice = repliesId === "ai-replies-home" ? aiReplies : aiReplies.slice(-2);
+  slice.forEach(function(r) {
+    var qDiv = el("div","ai-q","→ "+r.q); replyList.appendChild(qDiv);
+    var rep = el("div","ai-reply");
+    rep.innerHTML = '<span class="ai-reply-label">◆ WILL-OATS AI →</span>'+r.msg;
+    if (r.route) {
+      var rb = el("button","ai-route-btn","OPEN "+r.route.label.toUpperCase()+" →");
+      rb.onclick = function(){ routeClick(r.route); };
+      rep.appendChild(rb);
+    }
+    replyList.appendChild(rep);
+  });
+  box.appendChild(replyList);
+  return box;
+}
+
+function bullets(arr) {
+  var wrap = el("div","bullet-list");
+  arr.forEach(function(b) {
+    var item = el("div","bullet-item");
+    item.innerHTML = '<span class="bullet-dot">◆</span>'+b;
+    wrap.appendChild(item);
+  });
+  return wrap;
+}
+
+function inquiryForm(dept) {
+  var formState = {name:"",email:"",phone:"",detail:"",status:"idle"};
+  var wrap = el("div");
+  function renderForm() {
+    wrap.innerHTML = "";
+    if (formState.status === "success") {
+      var s = el("div","form-success");
+      s.innerHTML = "✓ Message sent — you'll hear back at "+formState.email+".";
+      if(formState.phone) s.innerHTML += "<br><span style='color:rgba(255,255,255,.5)'>📱 Text follow-up may come to "+formState.phone+"</span>";
+      wrap.appendChild(s);
+      return;
+    }
+    [
+      {key:"name",label:"YOUR NAME",type:"text"},
+      {key:"email",label:"EMAIL ADDRESS",type:"email"},
+      {key:"phone",label:"PHONE / TEXT (OPTIONAL)",type:"tel"},
+    ].forEach(function(f) {
+      var lbl = el("label",""); lbl.textContent = f.label; lbl.setAttribute("for",f.key+"-inp"); lbl.className="field-label";
+      var inp = el("input"); inp.type=f.type; inp.id=f.key+"-inp"; inp.className="field-input"; inp.value=formState[f.key];
+      inp.oninput = function(){ formState[f.key] = this.value; };
+      wrap.appendChild(lbl); wrap.appendChild(inp);
+    });
+    var tlbl = el("label","field-label","TELL ME ABOUT YOUR PROJECT");
+    var ta = el("textarea"); ta.className="field-textarea"; ta.rows=4; ta.placeholder="Dates, venue, scope, questions..."; ta.value=formState.detail;
+    ta.oninput = function(){ formState.detail=this.value; };
+    wrap.appendChild(tlbl); wrap.appendChild(ta);
+    if (formState.status==="error") { var err = el("div","form-err","⚠ Something went wrong — try again or email directly."); wrap.appendChild(err); }
+    var sbtn = el("button","submit-btn", formState.status==="sending"?"SENDING...":"SEND INQUIRY →");
+    sbtn.disabled = formState.status==="sending" || !formState.name || !formState.email;
+    sbtn.onclick = function() {
+      if (!formState.name || !formState.email) return;
+      formState.status = "sending"; renderForm();
+      fetch("https://formspree.io/f/mlgwpppq",{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({name:formState.name,email:formState.email,phone:formState.phone,department:dept.label,message:formState.detail})})
+        .then(function(r){formState.status=r.ok?"success":"error";renderForm();})
+        .catch(function(){formState.status="error";renderForm();});
+    };
+    wrap.appendChild(sbtn);
+    var de = el("div","direct-email","Direct: fookn.oats.enterprises@gmail.com");
+    wrap.appendChild(de);
+  }
+  renderForm();
+  return wrap;
+}
+
+function detailPage(item, backDest, showForm) {
+  var frag = document.createDocumentFragment();
+  frag.appendChild(backBtn(backDest));
+  var icon = el("div","detail-icon",item.icon);
+  var title = el("h2","detail-title",item.label);
+  var sub = el("p","detail-sub","FOOK'N OATS / "+item.label.toUpperCase());
+  var desc = el("p","detail-desc",item.desc);
+  frag.appendChild(icon); frag.appendChild(title); frag.appendChild(sub); frag.appendChild(desc);
+  if (item.bullets) frag.appendChild(bullets(item.bullets));
+  if (showForm) {
+    var ibox = el("div","inquiry-box");
+    var ilabel = el("div","inquiry-label","INQUIRY FORM — "+(item.cta||"CONTACT").toUpperCase());
+    ibox.appendChild(ilabel);
+    ibox.appendChild(inquiryForm(item));
+    frag.appendChild(ibox);
+    var cbox = el("div","calendly-box");
+    var clbl = el("div","calendly-label","PREFER A CALL?");
+    var cbtn = el("button","calendly-btn","ACTIVATE COMMS — LET'S CHAT →");
+    cbtn.onclick = function(){ window.open("https://calendly.com/fookn-oats-enterprises/30min","_blank"); };
+    cbox.appendChild(clbl); cbox.appendChild(cbtn);
+    frag.appendChild(cbox);
+  } else {
+    var bnote = el("div","brand-note");
+    bnote.innerHTML = '<div class="brand-note-label">THIS BRAND IS PART OF THE EXPANDING WILL-OATS UNIVERSE</div><div class="brand-note-text">Content, releases, and collaborations are in active development.</div>';
+    frag.appendChild(bnote);
+  }
+  var wrap = el("div","detail-wrap");
+  wrap.appendChild(frag);
+  return wrap;
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function renderView(view) {
+  var app = document.getElementById("app");
+  app.innerHTML = "";
+  updateNav(view);
+
+  // HOME
+  if (view === "home") {
+    var eyebrow = el("div","home-eyebrow","Services · Brands · Studio · Stories · Connect");
+    var title = el("h1","home-title","FOOK'N<br/><span style='color:var(--gold)'>OATS</span>");
+    title.innerHTML = "FOOK'N<br/><span style='color:var(--gold)'>OATS</span>";
+    var desc = el("p","home-desc","The Will-Oats Universe — production services, creative brands, music, touring stories, and everything in between. One ecosystem. Multiple identities.");
+    var btns = el("div","home-btns");
+    var b1=el("button","btn-primary","EXPLORE SERVICES →"); b1.onclick=function(){showView("section:services");};
+    var b2=el("button","btn-secondary","VIEW BRANDS →"); b2.onclick=function(){showView("section:brands");};
+    var b3=el("button","btn-ghost","SHOW PHOTOS ↗"); b3.onclick=openGallery;
+    btns.appendChild(b1); btns.appendChild(b2); btns.appendChild(b3);
+    app.appendChild(eyebrow); app.appendChild(title); app.appendChild(desc); app.appendChild(btns);
+
+    app.appendChild(renderAIBox("ai-input-home","ai-replies-home",null,null));
+
+    var ulbl = el("div","universe-label","THE WILL-OATS UNIVERSE");
+    var grid = el("div","card-grid");
+    SECTIONS.forEach(function(s) {
+      grid.appendChild(card(s, function(){ showView("section:"+s.id); }));
+    });
+    // make each card click correct
+    var cards = grid.querySelectorAll(".card");
+    SECTIONS.forEach(function(s, i) {
+      cards[i].onclick = function(){ showView("section:"+s.id); };
+    });
+    app.appendChild(ulbl); app.appendChild(grid);
+
+    var footer = el("div","footer");
+    footer.innerHTML = '<span>© FOOK\'N OATS ENTERPRISES</span><span>fookn.oats.enterprises@gmail.com</span>';
+    app.appendChild(footer);
+    return;
+  }
+
+  // SECTION: SERVICES
+  if (view === "section:services") {
+    app.appendChild(backBtn("home"));
+    app.appendChild(el("div","sec-tag","SERVICES"));
+    app.appendChild(el("h2","sec-title","Production Departments"));
+    app.appendChild(el("p","sec-desc","Six production departments under one roof — CAD drafting, master electrician work, LED wall tech, consulting, the Maker-Lab, and a lighting crew Design Network."));
+    app.appendChild(el("div","universe-label","DEPARTMENTS / SERVICES"));
+    var grid = el("div","card-grid-sm");
+    DEPARTMENTS.forEach(function(d) {
+      grid.appendChild(card(d, function(){ showView("dept:"+d.id); }));
+    });
+    var dCards = grid.querySelectorAll(".card");
+    DEPARTMENTS.forEach(function(d, i) { dCards[i].onclick = function(){ showView("dept:"+d.id); }; });
+    app.appendChild(grid);
+    return;
+  }
+
+  // DEPT DETAIL
+  var dept = DEPARTMENTS.find(function(d){ return view === "dept:"+d.id; });
+  if (dept) { app.appendChild(detailPage(dept, "section:services", true)); return; }
+
+  // SECTION: BRANDS
+  if (view === "section:brands") {
+    app.appendChild(backBtn("home"));
+    app.appendChild(el("div","sec-tag","BRAND ECOSYSTEM"));
+    app.appendChild(el("h2","sec-title","Six Identities."));
+    app.appendChild(el("p","sec-desc","Revelator Illuminae, Sleepwell Sweetheart, AI Oatmeal, Ghosted Oats, Cryptos4Oats, and Falling Star — each with its own voice, aesthetic, and purpose."));
+    var grid = el("div","card-grid-sm");
+    BRANDS.forEach(function(b) {
+      grid.appendChild(card(b, function(){ showView("brand:"+b.id); }));
+    });
+    var bCards = grid.querySelectorAll(".card");
+    BRANDS.forEach(function(b, i) { bCards[i].onclick = function(){ showView("brand:"+b.id); }; });
+    app.appendChild(grid);
+    return;
+  }
+
+  // BRAND DETAIL
+  var brand = BRANDS.find(function(b){ return view === "brand:"+b.id; });
+  if (brand) { app.appendChild(detailPage(brand, "section:brands", false)); return; }
+
+  // SECTION: STUDIO
+  if (view === "section:studio") {
+    app.appendChild(detailPage({
+      icon:"◈", label:"Studio",
+      desc:"Music production, DJ sets, livestreaming, and the Bobeng Builds workshop. Multiple stations, one creative ecosystem. The MIDI Music Machine, Mac Mini Deck, iPad Surface, full livestream setup — all under one roof. DJay Pro running on Mac Mini — the live remixing station for sets, practice sessions, and livestream DJ segments.",
+      bullets:["MIDI Music Machine","Mac Mini Deck / DJay Pro","Full livestream setup","Bobeng Builds fabrication workshop"]
+    }, "home", false));
+    return;
+  }
+
+  // SECTION: STORIES
+  if (view === "section:stories") {
+    app.appendChild(detailPage({
+      icon:"◎", label:"Road Stories",
+      desc:"Tour memories, festival chaos, and off-the-clock adventures. The stories that shaped the work.",
+      bullets:["Pretty Lights — Hampton, St. Augustine, Red Rocks birthday show, Halloween in Las Vegas","Electric Forest — the infamous wrong-way Uber story and the Beam Team scooter era","Desert resets — Joshua Tree, the Integratron sound bath, Palm Desert explorations","The ongoing Nature/Earth arc connecting land to self"]
+    }, "home", false));
+    return;
+  }
+
+  // SECTION: EDM
+  if (view === "section:edm") {
+    app.appendChild(detailPage({
+      icon:"⊕", label:"EDM Oatmeal",
+      desc:"Industry news, ground crew live feeds, and the Scan → Store → Stream pipeline. Automated hashtag scanning, event tracking, and real-time community pulse.",
+      bullets:["Live EDM news feed","Ground crew scanner","Hashtag & event tracking","Scan → Store → Stream pipeline","The Oats — main feed","Go4Oats Show — long-form content"]
+    }, "home", false));
+    return;
+  }
+
+  // SECTION: CONNECT
+  if (view === "section:connect") {
+    app.appendChild(detailPage({
+      icon:"◆", label:"Connect",
+      desc:"The Will-Oats Universe spans multiple platforms and identities. Here's where to find everything — social networks, media archive, community, and future structures.",
+      bullets:["Instagram: @theoats — The Oats main feed","Instagram / Threads: @sleepwellsweetheart — band + music","YouTube: Go4Oats Show — long-form content","YouTube: A.I. Oatmeal — AI content","Community marketplace (in development)","Decentralized crew union (in development)"]
+    }, "home", false));
+    return;
+  }
+
+  // SECTION: ABOUT
+  if (view === "section:about") {
+    var wrap = el("div","");
+    wrap.style.maxWidth = "620px";
+    wrap.appendChild(backBtn("home"));
+    wrap.appendChild(el("div","sec-tag","ABOUT / THE WILL-OATS TREE"));
+    var h2 = el("h2","sec-title"); h2.innerHTML = "The Human Behind<br>the Rig."; wrap.appendChild(h2);
+    wrap.appendChild(el("p","",SITE.about.subheadline));
+    wrap.style.cssText = "max-width:620px";
+    var p1 = el("p"); p1.style.cssText="color:rgba(255,255,255,.6);font-size:15px;line-height:1.85;margin-bottom:18px"; p1.textContent=SITE.about.subheadline; wrap.appendChild(p1);
+    var p2 = el("p"); p2.style.cssText="color:rgba(255,255,255,.5);font-size:14px;line-height:1.85;margin-bottom:18px"; p2.textContent="When I bill for a technician, their rate, lodging, and per diem are all covered — because that's how you build a crew that comes back. Specialized work gets a service line item. Nothing gets buried. The budget always makes sense."; wrap.appendChild(p2);
+    var p3 = el("p"); p3.style.cssText="color:rgba(255,255,255,.4);font-size:14px;line-height:1.85;margin-bottom:36px"; p3.textContent="The Will-Oats Tree. Higher self. Transformation era. Where production work meets creative identity meets personal evolution."; wrap.appendChild(p3);
+
+    var aiSm = el("div",""); aiSm.style.cssText="border:1px solid rgba(255,180,0,.2);padding:22px;background:rgba(255,180,0,.02);margin-bottom:28px";
+    var ail = el("div","",""); ail.style.cssText="font-family:var(--mono);font-size:9px;letter-spacing:.15em;color:var(--gold);margin-bottom:14px"; ail.textContent="◆ ASK ME ANYTHING"; aiSm.appendChild(ail);
+    var airow = el("div","ai-row");
+    var aiinp = el("input"); aiinp.type="text"; aiinp.id="ai-input-about"; aiinp.className="ai-input"; aiinp.placeholder="What do you want to know?";
+    aiinp.onkeydown = function(e){ if(e.key==="Enter") handleAI("ai-input-about","ai-replies-about"); };
+    var aibtn = el("button","ai-btn","ASK");
+    aibtn.onclick = function(){ handleAI("ai-input-about","ai-replies-about"); };
+    airow.appendChild(aiinp); airow.appendChild(aibtn); aiSm.appendChild(airow);
+    var aboutReplies = el("div"); aboutReplies.id="ai-replies-about";
+    aiReplies.slice(-2).forEach(function(r) {
+      var qDiv = el("div","ai-q","→ "+r.q); aboutReplies.appendChild(qDiv);
+      var rep = el("div","ai-reply");
+      rep.innerHTML = '<span class="ai-reply-label">◆ WILL-OATS AI →</span>'+r.msg;
+      if (r.route) { var rb=el("button","ai-route-btn","OPEN "+r.route.label.toUpperCase()+" →"); rb.onclick=function(){routeClick(r.route);}; rep.appendChild(rb); }
+      aboutReplies.appendChild(rep);
+    });
+    aiSm.appendChild(aboutReplies);
+    wrap.appendChild(aiSm);
+
+    var agrid = el("div","about-grid");
+    SECTIONS.filter(function(s){return s.id!=="about";}).forEach(function(s) {
+      var btn = el("button","about-link-btn"); btn.innerHTML="<span>"+s.icon+"</span>"+s.label;
+      btn.onclick = function(){ showView("section:"+s.id); };
+      agrid.appendChild(btn);
+    });
+    wrap.appendChild(agrid);
+    app.appendChild(wrap);
+    return;
+  }
+}
+
+// ── NAVIGATION ────────────────────────────────────────────────────────────────
+function showView(view) {
+  currentView = view;
+  renderView(view);
+  window.scrollTo(0,0);
+}
+
+// ── CALENDLY ─────────────────────────────────────────────────────────────────
+window.addEventListener("load", function() {
   if (window.Calendly) {
     Calendly.initBadgeWidget({
       url: SITE.calendly.url,
@@ -393,7 +713,10 @@ window.onload = function() {
       branding: true
     });
   }
-};
+});
+
+// ── BOOT ─────────────────────────────────────────────────────────────────────
+showView("home");
 </script>
 </body>
 </html>

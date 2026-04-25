@@ -1,1 +1,318 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>FOOK'N OATS</title><meta name="robots" content="noindex, nofollow"/><style>*{margin:0;padding:0;box-sizing:border-box}body{background:#090909}#ticker-bar{display:none;width:100%;background:linear-gradient(90deg,#090909,#1a1a1a,#090909);border-bottom:1px solid rgba(255,180,0,0.3);overflow:hidden;position:relative;z-index:9999}#ticker-bar .ticker-track{display:flex;animation:ticker-scroll 20s linear infinite;white-space:nowrap;padding:8px 0}#ticker-bar .ticker-text{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#ffb400;padding:0 48px}@keyframes ticker-scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}</style><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/><script defer="defer" src="./static/js/main.dac6dccd.js"></script></head><body><div id="ticker-bar"><div class="ticker-track"><span class="ticker-text" id="ticker-t1"></span><span class="ticker-text" id="ticker-t2"></span><span class="ticker-text" id="ticker-t3"></span><span class="ticker-text" id="ticker-t4"></span></div></div><div id="root"></div><link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet"><script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script><script type="text/javascript">window.onload=function(){Calendly.initBadgeWidget({url:"https://calendly.com/fookn-oats-enterprises/30min",text:"ACTIVATE COMMS - LETS CHAT!",color:"#0069ff",textColor:"#ffffff",branding:!0})}</script><script type="text/javascript">!function(){fetch("./ticker.json").then(function(r){return r.json()}).then(function(d){if(d&&d.enabled&&d.text){var sep=" \u2022 ";var full=d.text+sep;document.getElementById("ticker-t1").textContent=full;document.getElementById("ticker-t2").textContent=full;document.getElementById("ticker-t3").textContent=full;document.getElementById("ticker-t4").textContent=full;document.getElementById("ticker-bar").style.display="block"}}).catch(function(){})}()</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="robots" content="noindex, nofollow"/>
+  <title>FOOK'N OATS</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    :root{
+      --gold:#ffb400;
+      --bg:#090909;
+      --bg2:#111;
+      --bg3:#1a1a1a;
+      --border:rgba(255,180,0,0.15);
+      --text:#e0e0e0;
+      --muted:rgba(255,255,255,0.4);
+      --font:'IBM Plex Mono',monospace;
+    }
+    body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh}
+
+    /* TICKER */
+    #ticker-bar{display:none;width:100%;background:linear-gradient(90deg,var(--bg),var(--bg3),var(--bg));border-bottom:1px solid var(--border);overflow:hidden;position:relative;z-index:9999}
+    .ticker-track{display:flex;animation:ticker-scroll 25s linear infinite;white-space:nowrap;padding:8px 0}
+    .ticker-text{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);padding:0 48px}
+    @keyframes ticker-scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+    /* NAV */
+    nav{background:rgba(9,9,9,0.95);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:2px;position:sticky;top:0;z-index:100;overflow-x:auto}
+    nav a{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:14px 12px;text-decoration:none;white-space:nowrap;transition:color 0.2s;border-bottom:2px solid transparent}
+    nav a:hover,nav a.active{color:var(--gold);border-bottom-color:var(--gold)}
+
+    /* SECTIONS */
+    section{padding:60px 24px;max-width:900px;margin:0 auto;display:none}
+    section.active{display:block}
+
+    /* HOME */
+    .home-hero{text-align:center;padding:80px 0 40px}
+    .home-title{font-size:clamp(32px,8vw,72px);letter-spacing:8px;color:var(--gold);font-weight:600;line-height:1}
+    .home-sub{font-size:11px;letter-spacing:3px;color:var(--muted);margin-top:16px;text-transform:uppercase}
+    .show-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:2px;margin-top:40px}
+    .show-grid img{width:100%;aspect-ratio:16/9;object-fit:cover;filter:grayscale(20%);transition:filter 0.3s}
+    .show-grid img:hover{filter:grayscale(0%) brightness(1.1)}
+
+    /* CARDS */
+    .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-top:8px}
+    .card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:20px;transition:border-color 0.2s;cursor:default}
+    .card:hover{border-color:rgba(255,180,0,0.4)}
+    .card-icon{font-size:20px;margin-bottom:10px}
+    .card-label{font-size:12px;letter-spacing:2px;font-weight:600;color:#fff;text-transform:uppercase;margin-bottom:4px}
+    .card-tagline{font-size:10px;letter-spacing:1px;color:var(--gold);margin-bottom:10px;text-transform:uppercase}
+    .card-desc{font-size:11px;color:var(--muted);line-height:1.6}
+
+    /* SECTION HEADER */
+    .section-head{margin-bottom:32px}
+    .section-title{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+    .section-tagline{font-size:clamp(18px,3vw,28px);font-weight:600;color:#fff;line-height:1.3}
+
+    /* SOCIAL */
+    .social-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:8px}
+    .social-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px;text-decoration:none;display:block;transition:border-color 0.2s}
+    .social-card:hover{border-color:rgba(255,180,0,0.4)}
+    .social-icon{font-size:18px;margin-bottom:8px}
+    .social-platform{font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:2px}
+    .social-handle{font-size:12px;color:var(--gold);font-weight:600;margin-bottom:4px}
+    .social-desc{font-size:10px;color:var(--muted)}
+
+    /* ABOUT */
+    .about-headline{font-size:clamp(24px,4vw,42px);font-weight:600;line-height:1.2;margin-bottom:16px}
+    .about-headline span{color:var(--gold)}
+    .about-body{font-size:13px;color:var(--muted);line-height:1.8;margin-bottom:32px;max-width:620px}
+    .tree{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:24px;margin-top:8px}
+    .tree-title{font-size:9px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:16px}
+    .tree-item{padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05)}
+    .tree-item:last-child{border-bottom:none}
+    .tree-item-label{font-size:11px;color:var(--gold);margin-bottom:3px;letter-spacing:1px}
+    .tree-item-desc{font-size:11px;color:var(--muted);line-height:1.5}
+
+    /* TICKER ADMIN LINK */
+    .ticker-admin-link{display:inline-block;margin-top:24px;font-size:9px;letter-spacing:2px;color:var(--muted);text-decoration:none;text-transform:uppercase;border:1px solid var(--border);padding:6px 12px;border-radius:4px}
+    .ticker-admin-link:hover{color:var(--gold);border-color:var(--gold)}
+  </style>
+</head>
+<body>
+
+<div id="ticker-bar">
+  <div class="ticker-track">
+    <span class="ticker-text" id="t1"></span>
+    <span class="ticker-text" id="t2"></span>
+    <span class="ticker-text" id="t3"></span>
+    <span class="ticker-text" id="t4"></span>
+  </div>
+</div>
+
+<nav id="nav"></nav>
+
+<div id="app"></div>
+
+<link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet"/>
+<script src="https://assets.calendly.com/assets/external/widget.js" async></script>
+<script src="./site.js"></script>
+<script>
+// ── RENDER ENGINE ──────────────────────────────────────────
+function h(tag, attrs, ...children) {
+  var el = document.createElement(tag);
+  if (attrs) Object.entries(attrs).forEach(([k,v]) => {
+    if (k === 'class') el.className = v;
+    else if (k === 'href') el.href = v;
+    else if (k === 'src') el.src = v;
+    else if (k === 'alt') el.alt = v;
+    else if (k === 'target') el.target = v;
+    else el.setAttribute(k, v);
+  });
+  children.flat().forEach(c => {
+    if (c == null) return;
+    el.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+  });
+  return el;
+}
+
+var currentSection = 'home';
+
+// ── NAV ────────────────────────────────────────────────────
+var nav = document.getElementById('nav');
+SITE.nav.forEach(function(item) {
+  var a = h('a', {href:'#', class: item.id === 'home' ? 'active' : ''}, item.label);
+  a.addEventListener('click', function(e) {
+    e.preventDefault();
+    showSection(item.id);
+  });
+  nav.appendChild(a);
+});
+
+function showSection(id) {
+  currentSection = id;
+  document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+  var sec = document.getElementById('sec-' + id);
+  if (sec) sec.classList.add('active');
+  var navLink = Array.from(nav.querySelectorAll('a')).find(a => a.textContent === SITE.nav.find(n=>n.id===id)?.label);
+  if (navLink) navLink.classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ── TICKER ─────────────────────────────────────────────────
+fetch('./ticker.json?nocache=' + Date.now())
+  .then(r => r.json())
+  .then(d => {
+    if (d && d.enabled && d.text) {
+      var full = d.text + ' • ';
+      ['t1','t2','t3','t4'].forEach(id => document.getElementById(id).textContent = full);
+      document.getElementById('ticker-bar').style.display = 'block';
+    }
+  }).catch(()=>{});
+
+// ── SECTIONS ───────────────────────────────────────────────
+var app = document.getElementById('app');
+
+// HOME
+var homeSection = h('section', {id:'sec-home', class:'active'},
+  h('div', {class:'home-hero'},
+    h('div', {class:'home-title'}, SITE.title),
+    h('div', {class:'home-sub'}, 'Production • Design • Creation')
+  ),
+  h('div', {class:'show-grid'},
+    ...SITE.shows.map(src => h('img', {src, alt:'Show'}))
+  )
+);
+app.appendChild(homeSection);
+
+// SERVICES
+var servicesSection = h('section', {id:'sec-services'},
+  h('div', {class:'section-head'},
+    h('div', {class:'section-title'}, 'What We Do'),
+    h('div', {class:'section-tagline'}, 'Production departments. Lighting, CAD, LED, fabrication, crew networking.')
+  ),
+  h('div', {class:'card-grid'},
+    ...SITE.services.map(s => h('div', {class:'card'},
+      h('div', {class:'card-icon'}, s.icon),
+      h('div', {class:'card-label'}, s.label),
+      h('div', {class:'card-tagline'}, s.tagline),
+      h('div', {class:'card-desc'}, s.desc)
+    ))
+  )
+);
+app.appendChild(servicesSection);
+
+// BRANDS
+var brandsSection = h('section', {id:'sec-brands'},
+  h('div', {class:'section-head'},
+    h('div', {class:'section-title'}, 'Brand Ecosystem'),
+    h('div', {class:'section-tagline'}, 'Six creative identities — from lighting art to crypto to DJ sets.')
+  ),
+  h('div', {class:'card-grid'},
+    ...SITE.brands.map(b => h('div', {class:'card'},
+      h('div', {class:'card-icon'}, b.icon),
+      h('div', {class:'card-label'}, b.label),
+      h('div', {class:'card-tagline'}, b.tagline),
+      h('div', {class:'card-desc'}, b.desc)
+    ))
+  )
+);
+app.appendChild(brandsSection);
+
+// STUDIO
+var studioSection = h('section', {id:'sec-studio'},
+  h('div', {class:'section-head'},
+    h('div', {class:'section-title'}, 'Studio'),
+    h('div', {class:'section-tagline'}, 'Music production, livestreaming, and the Bobeng Builds workshop.')
+  ),
+  h('div', {class:'card-grid'},
+    h('div', {class:'card'},
+      h('div', {class:'card-icon'}, '♫'),
+      h('div', {class:'card-label'}, 'Music Production'),
+      h('div', {class:'card-tagline'}, 'Tracks, remixes, and original compositions.'),
+      h('div', {class:'card-desc'}, 'The studio side of the Oats universe — music production, mixing, and original electronic compositions across multiple projects.')
+    ),
+    h('div', {class:'card'},
+      h('div', {class:'card-icon'}, '▶'),
+      h('div', {class:'card-label'}, 'Livestreaming'),
+      h('div', {class:'card-tagline'}, 'Go4Oats Show. Live production. On-stream.'),
+      h('div', {class:'card-desc'}, 'The Go4Oats Show livestream ecosystem — production, tech stack, streaming setup, and on-air content development.')
+    ),
+    h('div', {class:'card'},
+      h('div', {class:'card-icon'}, '⚙'),
+      h('div', {class:'card-label'}, 'Bobeng Builds'),
+      h('div', {class:'card-tagline'}, 'Workshop. Fabrication. Maker projects.'),
+      h('div', {class:'card-desc'}, 'The hands-on workshop arm — custom builds, fabrication projects, and the maker lab in action.')
+    )
+  )
+);
+app.appendChild(studioSection);
+
+// STORIES
+var storiesSection = h('section', {id:'sec-stories'},
+  h('div', {class:'section-head'},
+    h('div', {class:'section-title'}, 'Road Stories'),
+    h('div', {class:'section-tagline'}, 'Pretty Lights tours, Electric Forest, desert road trips.')
+  ),
+  h('div', {class:'card-grid'},
+    ...SITE.stories.map(s => h('div', {class:'card'},
+      h('div', {class:'card-icon'}, s.icon),
+      h('div', {class:'card-label'}, s.label),
+      h('div', {class:'card-tagline'}, s.tagline),
+      h('div', {class:'card-desc'}, s.desc)
+    ))
+  )
+);
+app.appendChild(storiesSection);
+
+// EDM
+var edmSection = h('section', {id:'sec-edm'},
+  h('div', {class:'section-head'},
+    h('div', {class:'section-title'}, 'EDM Oatmeal'),
+    h('div', {class:'section-tagline'}, 'Live feed. Ground crew. Scanner. The pulse of EDM.')
+  ),
+  h('div', {class:'card'},
+    h('div', {class:'card-icon'}, '⚡'),
+    h('div', {class:'card-label'}, 'EDM Oatmeal Feed'),
+    h('div', {class:'card-tagline'}, 'Live community. Real-time pulse.'),
+    h('div', {class:'card-desc'}, 'The EDM Oatmeal ground crew and community feed — real-time updates, show info, and the pulse of the electronic music world through the Oats lens.')
+  ),
+  h('div', {style:'margin-top:16px'},
+    h('a', {href:'./ticker-admin.html', class:'ticker-admin-link'}, '→ Ticker Control Panel')
+  )
+);
+app.appendChild(edmSection);
+
+// ABOUT
+var aboutSection = h('section', {id:'sec-about'},
+  h('div', {class:'about-headline'},
+    'The Human Behind ', h('span', null, 'the Rig.')
+  ),
+  h('div', {class:'about-body'}, SITE.about.subheadline),
+  h('div', {class:'about-body'}, SITE.about.body),
+  h('div', {class:'tree'},
+    h('div', {class:'tree-title'}, '● THE WILL-OATS TREE (CORE)'),
+    ...SITE.about.tree.map(item => h('div', {class:'tree-item'},
+      h('div', {class:'tree-item-label'}, item.label),
+      h('div', {class:'tree-item-desc'}, item.desc)
+    ))
+  )
+);
+app.appendChild(aboutSection);
+
+// CONNECT
+var connectSection = h('section', {id:'sec-connect'},
+  h('div', {class:'section-head'},
+    h('div', {class:'section-title'}, 'Connect'),
+    h('div', {class:'section-tagline'}, 'Social networks, media archive, and future structures.')
+  ),
+  h('div', {class:'social-grid'},
+    ...SITE.social.map(s => h('a', {href: s.url, target:'_blank', class:'social-card'},
+      h('div', {class:'social-icon'}, s.icon),
+      h('div', {class:'social-platform'}, s.platform),
+      h('div', {class:'social-handle'}, s.handle),
+      h('div', {class:'social-desc'}, s.desc)
+    ))
+  )
+);
+app.appendChild(connectSection);
+
+// ── CALENDLY ───────────────────────────────────────────────
+window.onload = function() {
+  if (window.Calendly) {
+    Calendly.initBadgeWidget({
+      url: SITE.calendly.url,
+      text: SITE.calendly.text,
+      color: SITE.calendly.color,
+      textColor: SITE.calendly.textColor,
+      branding: true
+    });
+  }
+};
+</script>
+</body>
+</html>
